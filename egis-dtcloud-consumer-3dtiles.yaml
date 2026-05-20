@@ -37,10 +37,10 @@ spec:
             readOnlyRootFilesystem: false # buff/cache memory  조절용, 파일 read 캐쉬를 많이 사용하다 보면 메모리 오버남
           resources:
             requests: # 15 vCPU, 30Gi 메모리 요청, 최대값임.
-              cpu: "8" # 최소 250m(0.25 vCPU) 사용 요청 , 15-30 --> 8
+              cpu: "5" # 최소 250m(0.25 vCPU) 사용 요청 , 15-30 --> 8
               memory: "10Gi" # 기본 상태
             limits:
-              cpu: "8" # request의 10% 추가 설정 , 15-30 --> 12
+              cpu: "5" # request의 10% 추가 설정 , 15-30 --> 12
               memory: "10Gi" # 수십기가 대용량 20개 붙을 경우를 대비해서 16Gi 설정
       volumes:
         - name: convert-user-data
