@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: egis-dtcloud-consumer-building
+  name: egis-dtcloud-consumer-3dtiles
   namespace: egis-cloud
 spec:
   selector:
     matchLabels:
-      app: egis-dtcloud-consumer-building
+      app: egis-dtcloud-consumer-3dtiles
   template:
     metadata:
       labels:
-        app: egis-dtcloud-consumer-building
+        app: egis-dtcloud-consumer-3dtiles
     spec:
       affinity: #특정 노드풀에만 deployment를 생성하기 위함
         nodeAffinity:
@@ -23,8 +23,8 @@ spec:
                       - egis-pnts-node
       terminationGracePeriodSeconds: 30 # 종료 대기 시간 설정, preStop 끝나고 60초 뒤에 KUBE가 SIGKILL 날려서 POD 닫음
       containers:
-        - name: egis-dtcloud-consumer-building-container
-          image: digitaltwin-container.kr-central-2.kcr.dev/egis-dev-convert/xdconvertbuilding:20260520-5e07c73
+        - name: egis-dtcloud-consumer-3dtiles-container
+          image: digitaltwin-container.kr-central-2.kcr.dev/egis-dev-convert/xdconvert3dtiles:20260520-5e07c73
           lifecycle:
             preStop: #Kuber 가 SIGTERM 날려서 POD 가 받으면 실행함. 이게 종료되면 쿠버가 terminationGracePeriodSeconds 설정값 대기한 후 SIGKILL을 날려 POD 종료
               exec:
