@@ -1,56 +1,51 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-    name: egis-dtcloud-consumer-3dtiles
-    namespace: egis-cloud
+  name: egis-dtcloud-consumer-3dtiles
+  namespace: egis-cloud
 spec:
-    selector:
-        matchLabels:
-            app: egis-dtcloud-consumer-3dtiles
-    template:
-        metadata:
-            labels:
-                app: egis-dtcloud-consumer-3dtiles
-        spec:
-            affinity: #특정 노드풀에만 deployment를 생성하기 위함
-                nodeAffinity:
-                    requiredDuringSchedulingIgnoredDuringExecution:
-                        nodeSelectorTerms:
-                            - matchExpressions:
-                                  - key: kakaoi.io/kke-nodepool
-                                    operator: In
-                                    values:
-                                        - egis-convert-3d
-            terminationGracePeriodSeconds: 30 # 종료 대기 시간 설정, preStop 끝나고 60초 뒤에 KUBE가 SIGKILL 날려서 POD 닫음
-            containers:
-                - name: egis-dtcloud-consumer-3dtiles-container
-                  image: digitaltwin-container.kr-central-2.kcr.dev/egis-dev-convert/xdconvert3dtiles:20260520-5e07c73
-                  lifecycle:
-                      preStop: #Kuber 가 SIGTERM 날려서 POD 가 받으면 실행함. 이게 종료되면 쿠버가 terminationGracePeriodSeconds 설정값 대기한 후 SIGKILL을 날려 POD 종료
-                          exec:
-                              command:
-                                  [
-                                      "/bin/sh",
-                                      "-c",
-                                      'threshold=0.5; while true; do load_average=$(cat /proc/loadavg | awk ''{print $2}''); echo "Current 5-minute Load Average: $load_average"; if (( $(echo "$load_average <= $threshold" | bc -l) )); then echo "Load Average is below $threshold. Exiting..."; break; fi; sleep 5; done',
-                                  ]
-                  volumeMounts:
-                      - name: convert-user-data
-                        mountPath: /data/DT_DATA
-                  securityContext: #보안 관련 설정
-                      privileged: true #이 설정을 해야함 캐쉬 조절용
-                      readOnlyRootFilesystem: false # buff/cache memory  조절용, 파일 read 캐쉬를 많이 사용하다 보면 메모리 오버남
-                  resources:
-                      requests: # 15 vCPU, 30Gi 메모리 요청, 최대값임.
-                          cpu: "4" # 최소 250m(0.25 vCPU) 사용 요청 , 15-30 --> 8
-                          memory: "4Gi" # 기본 상태
-                      limits:
-                          cpu: "4" # request의 10% 추가 설정 , 15-30 --> 12
-                          memory: "4Gi" # 수십기가 대용량 20개 붙을 경우를 대비해서 16Gi 설정
-            volumes:
-                #- name: convert-data
-                #  persistentVolumeClaim:
-                #    claimName: load-test-convert #pvc 스토리지 설정 5Ti
-                - name: convert-user-data
-                  persistentVolumeClaim:
-                      claimName: egis-convert-userdata-pvc
+  selector:
+    matchLabels:
+      app: egis-dtcloud-consumer-3dtiles
+  template:
+    metadata:
+      labels:
+        app: egis-dtcloud-consumer-3dtiles
+    spec:
+      affinity: #특정 노드풀에만 deployment를 생성하기 위함
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kakaoi.io/kke-nodepool
+                    operator: In
+                    values:
+                      - egis-convert-3d
+      terminationGracePeriodSeconds: 30 # 종료 대기 시간 설정, preStop 끝나고 60초 뒤에 KUBE가 SIGKILL 날려서 POD 닫음
+      containers:
+        - name: egis-dtcloud-consumer-3dtiles-container
+          image: digitaltwin-container.kr-central-2.kcr.dev/egis-dev-convert/xdconvert3dtiles:20260520-67d6f12
+          lifecycle:
+            preStop: #Kuber 가 SIGTERM 날려서 POD 가 받으면 실행함. 이게 종료되면 쿠버가 terminationGracePeriodSeconds 설정값 대기한 후 SIGKILL을 날려 POD 종료
+              exec:
+                command: ["/bin/sh", "-c", 'threshold=0.5; while true; do load_average=$(cat /proc/loadavg | awk ''{print $2}''); echo "Current 5-minute Load Average: $load_average"; if (( $(echo "$load_average <= $threshold" | bc -l) )); then echo "Load Average is below $threshold. Exiting..."; break; fi; sleep 5; done']
+          volumeMounts:
+            - name: convert-user-data
+              mountPath: /data/DT_DATA
+          securityContext: #보안 관련 설정
+            privileged: true #이 설정을 해야함 캐쉬 조절용
+            readOnlyRootFilesystem: false # buff/cache memory  조절용, 파일 read 캐쉬를 많이 사용하다 보면 메모리 오버남
+          resources:
+            requests: # 15 vCPU, 30Gi 메모리 요청, 최대값임.
+              cpu: "4" # 최소 250m(0.25 vCPU) 사용 요청 , 15-30 --> 8
+              memory: "4Gi" # 기본 상태
+            limits:
+              cpu: "4" # request의 10% 추가 설정 , 15-30 --> 12
+              memory: "4Gi" # 수십기가 대용량 20개 붙을 경우를 대비해서 16Gi 설정
+      volumes:
+        #- name: convert-data
+        #  persistentVolumeClaim:
+        #    claimName: load-test-convert #pvc 스토리지 설정 5Ti
+        - name: convert-user-data
+          persistentVolumeClaim:
+            claimName: egis-convert-userdata-pvc
